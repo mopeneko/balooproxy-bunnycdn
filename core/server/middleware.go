@@ -206,10 +206,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			//This request is not to be challenged (whitelist)
 		case 1:
 			writer.Header().Set("Set-Cookie", "_1__bProxy_v="+encryptedIP+"; SameSite=Lax; path=/; Secure")
+			writer.Header().Set("Cache-Control", "no-cache")
 			http.Redirect(writer, request, request.URL.RequestURI(), http.StatusFound)
 			return
 		case 2:
 			writer.Header().Set("Content-Type", "text/html")
+			writer.Header().Set("Cache-Control", "no-cache")
 			fmt.Fprintf(writer, `<script>let hasMemApi=!1,useMem=!1,hasKnownMem=!1,startMem=null,plugCh=!1,mimeCh=!1;function calcSolution(e){let i=0;for(var t=Math.pow(e,7);t>=0;t--)i+=Math.atan(t)*Math.tan(t);return!0}if(void 0!=performance.memory){if(hasMemApi=!0,startMem=performance.memory,161e5==performance.memory.totalJSHeapSize||127e5==performance.memory.usedJSHeapSize||1e7==performance.memory.usedJSHeapSize||219e4==performance.memory.jsHeapSizeLimit)for(hasKnownMem=!0;calcSolution(performance.memory.usedJSHeapSize);)0>performance.now()&&(hasKnownMem=!1);else calcSolution(8)}if(hasMemApi){let e=performance.memory;if(startMem.usedJSHeapSize==e.usedJSHeapSize&&startMem.jsHeapSizeLimit==e.jsHeapSizeLimit&&startMem.totalJSHeapSize==e.totalJSHeapSize)for(useMem=!0;calcSolution(performance.memory.usedJSHeapSize);)0>performance.now()&&(hasKnownMem=!1)}let pluginString=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(navigator),"plugins").get.toString();"function get plugins() { [native code] }"!=pluginString&&"function plugins() {\n        [native code]\n    }"!=pluginString&&"function plugins() {\n    [native code]\n}"!=pluginString&&(plugCh=!0);let mimeString=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(navigator),"plugins").get.toString();"function get plugins() { [native code] }"!=mimeString&&"function plugins() {\n        [native code]\n    }"!=mimeString&&"function plugins() {\n    [native code]\n}"!=mimeString&&(mimeCh=!0),mimeCh||plugCh||useMem||hasKnownMem||(document.cookie="_2__bProxy_v=%s; SameSite=Lax; path=/; Secure",window.location.reload());</script>`, encryptedIP)
 			return
 		case 3:
@@ -235,6 +237,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 
 				var buf bytes.Buffer
 				if err := png.Encode(&buf, captchaImg); err != nil {
+					writer.Header().Set("Cache-Control", "no-cache")
 					fmt.Fprintf(writer, `BalooProxy Error: Failed to encode captcha: %s`, err)
 					return
 				}
@@ -247,6 +250,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 				captchaData = captchaCache.(string)
 			}
 
+			writer.Header().Set("Cache-Control", "no-cache")
 			writer.Header().Set("Content-Type", "text/html")
 			fmt.Fprintf(writer,
 				`
@@ -476,6 +480,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 			return
 		default:
 			writer.Header().Set("Content-Type", "text/plain")
+			writer.Header().Set("Cache-Control", "no-cache")
 			fmt.Fprintf(writer, "Blocked by BalooProxy.\nSuspicious request of level %d (base %d)", susLv, domainData.Stage)
 			return
 		}
@@ -511,10 +516,12 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	switch request.URL.Path {
 	case "/_bProxy/stats":
 		writer.Header().Set("Content-Type", "text/plain")
+		writer.Header().Set("Cache-Control", "no-cache")
 		fmt.Fprintf(writer, "Stage: %s\nTotal Requests: %s\nBypassed Requests: %s\nTotal R/s: %s\nBypassed R/s: %s", strconv.Itoa(domainData.Stage), strconv.Itoa(domainData.TotalRequests), strconv.Itoa(domainData.BypassedRequests), strconv.Itoa(domainData.RequestsPerSecond), strconv.Itoa(domainData.RequestsBypassedPerSecond))
 		return
 	case "/_bProxy/fingerprint":
 		writer.Header().Set("Content-Type", "text/plain")
+		writer.Header().Set("Cache-Control", "no-cache")
 
 		firewall.Mutex.Lock()
 		fmt.Fprintf(writer, "IP: "+ip+"\nASN: "+ipInfoASN+"\nCountry: "+ipInfoCountry+"\nIP Requests: "+strconv.Itoa(ipCount)+"\nIP Challenge Requests: "+strconv.Itoa(firewall.AccessIpsCookie[ip])+"\nSusLV: "+strconv.Itoa(susLv)+"\nFingerprint: "+tlsFp+"\nBrowser: "+browser+botFp)
@@ -522,6 +529,7 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 		return
 	case "/_bProxy/verified":
 		writer.Header().Set("Content-Type", "text/plain")
+		writer.Header().Set("Cache-Control", "no-cache")
 		fmt.Fprintf(writer, "verified")
 		return
 	case "/_bProxy/" + proxy.AdminSecret + "/api/v1":
