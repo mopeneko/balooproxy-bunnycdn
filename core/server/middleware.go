@@ -50,10 +50,10 @@ func Middleware(writer http.ResponseWriter, request *http.Request) {
 	var ipCountCookie int
 
 	if domains.Config.Proxy.Cloudflare {
-		ip = request.Header.Get("Cf-Connecting-Ip")
+		ip = request.Header.Get("X-Real-Ip")
 
-		tlsFp = "Cloudflare"
-		browser = "Cloudflare"
+		tlsFp = "BunnyCDN"
+		browser = "BunnyCDN"
 		botFp = ""
 		fpCount = 0
 
